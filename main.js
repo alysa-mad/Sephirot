@@ -93,7 +93,7 @@ setInterval(() => {
     torrents.forEach((torrent) => {
         torrent.peers = []
     });
-}, 400000);
+}, 200000);
 app.get('/announce', (req, res) => {
     const get_request = req;
     var loaded_torrent;
