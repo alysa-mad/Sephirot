@@ -52,10 +52,13 @@ class peer{
 }
 
 class torrent{
-    constructor(info_hash=undefined, peers=[], data={}, loaded=[]){
+    constructor(info_hash=undefined, peers=[], data={}, loaded=[], complete=[], incomplete=[]){
         this.info_hash = info_hash;
         this.peers = peers;
-        this.data = {};
+        this.data = {
+            complete: complete,
+            incomplete: incomplete 
+        };
         this.loaded = loaded;
     }
     get(){
@@ -77,12 +80,9 @@ class encode_config{
     }
 };
 
-var tracker_complete = 0;
-var tracker_incomplete = 0;
+
 var torrents = [];
 
-var check_comp = [];
-var check_incomp = [];
 setInterval(() => {
     torrents.forEach((torrent) => {
         torrent.loaded = []
@@ -93,7 +93,7 @@ setInterval(() => {
     torrents.forEach((torrent) => {
         torrent.peers = []
     });
-}, 300000);
+}, 400000);
 app.get('/announce', (req, res) => {
     const get_request = req;
     var loaded_torrent;
@@ -113,26 +113,24 @@ app.get('/announce', (req, res) => {
 
     var pp = [];
     pp.push("l");
-    left = get_request['query'].left
-    if(left == 0 && check_comp.includes(get_request['query'].peer_id) == false){
-        check_comp.push(get_request['query'].peer_id);
-        tracker_complete = check_comp.length
-        if(check_incomp.includes(get_request['query'].peer_id)){
-            if(check_incomp.indexOf(get_request['query'].peer_id) != -1){
-                delete check_incomp[check_incomp.indexOf(get_request['query'].peer_id)];
+    if(get_request['query'].left == 0 && loaded_torrent.data.complete.includes(get_request['query'].peer_id) == false){
+        loaded_torrent.data.complete.push(get_request['query'].peer_id);
+        if(loaded_torrent.data.incomplete.includes(get_request['query'].peer_id)){
+            if(loaded_torrent.data.incomplete.indexOf(get_request['query'].peer_id) != -1){
+                delete loaded_torrent.data.incomplete[loaded_torrent.data.incomplete.indexOf(get_request['query'].peer_id)];
             }
         }
     }
-    else if(left != 0 && check_incomp.includes(get_request['query'].peer_id) == false){
-        check_incomp.push(get_request['query'].peer_id);
-        tracker_incomplete = check_incomp.length;
-        if(check_comp.includes(get_request['query'].peer_id)){
-            if(check_comp.indexOf(get_request['query'].peer_id) != -1){
-                delete check_comp[check_comp.indexOf(get_request['query'].peer_id)];
+    else if(get_request['query'].left != 0 && loaded_torrent.data.incomplete.includes(get_request['query'].peer_id) == false){
+        loaded_torrent.data.incomplete.push(get_request['query'].peer_id);
+        if(loaded_torrent.data.complete.includes(get_request['query'].peer_id)){
+            if(loaded_torrent.data.complete.indexOf(get_request['query'].peer_id) != -1){
+                delete loaded_torrent.data.complete[loaded_torrent.data.complete.indexOf(get_request['query'].peer_id)];
             }
         }
     }
-
+    var tracker_incomplete = loaded_torrent.data.incomplete.length;
+    var tracker_complete = loaded_torrent.data.complete.length;
     const process = peers.forEach((peer) => {
         if(peer.ip.includes(":")){
             peer.ip = peer.ip.split(":").join("");
