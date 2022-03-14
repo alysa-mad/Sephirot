@@ -6,25 +6,28 @@ var fs = require('fs');
 
 const default_config = {
     interval: "300",
-    tracker_id: "thatsitwhatyoulookinghere"
+    tracker_id: "thatsitwhatyoulookinghere",
+    port: 9797
 };
-var config_path = "config.json"
+
+var config_path = "config.json";
 try {
     if(fs.existsSync(config_path)) {
         console.log("[debug]".green, "Config file found, loading...");
-        l_config = JSON.parse(fs.readFileSync(config_path, 'utf8'));
+        var l_config = JSON.parse(fs.readFileSync(config_path, 'utf8'));
     } else {
         console.log("[debug]".green, "Config file not found, creating a default one...");
-        l_config = default_config;
+        var l_config = default_config;
         try{
             fs.writeFileSync('config.json', JSON.stringify(default_config, null, 4), 'utf8');
         }catch (e){
             console.error("[error]".red,"Cannot write config file ", e);
         }
-    }
+    };
 } catch (e) {
     console.error("[error]".red,"Cannot read config file ", e);
-}
+};
+
 app.use(
     express.urlencoded({
         extended: true
@@ -47,9 +50,7 @@ class peer{
         return peer_get;
     }
 }
-var tracker_complete = 0;
-var tracker_incomplete = 0;
-var torrents = [];
+
 class torrent{
     constructor(info_hash=undefined, peers=[], data={}, loaded=[]){
         this.info_hash = info_hash;
@@ -61,6 +62,24 @@ class torrent{
         return {info_hash: this.info_hash,peers: this.peers,data: this.data, loaded: this.loaded}
     }
 };
+
+class encode_config{
+    constructor(interval="30", tracker_id="thatsitwhatyoulookinghere", complete=0, incomplete=0, peers="le"){
+        this.interval = interval;
+        this.tracker_id = tracker_id;
+        this.complete = complete;
+        this.incomplete = incomplete;
+        this.peers = peers;
+    };
+    encode(){
+        const obj_config = "d" +  "8" + ":" + "interval" + "i" + this.interval + "e" + "10" + ":" + "tracker id" + this.tracker_id.length + ":" + this.tracker_id + "8" + ":" + "complete" +  "i" + this.complete + "e" + "10" + ":" + "incomplete" + "i" + this.incomplete + "e" + "5" + ":" + "peers" + this.peers + "e";
+        return obj_config
+    }
+};
+
+var tracker_complete = 0;
+var tracker_incomplete = 0;
+var torrents = [];
 
 var check_comp = [];
 var check_incomp = [];
@@ -106,7 +125,7 @@ app.get('/announce', (req, res) => {
     }
     else if(left != 0 && check_incomp.includes(get_request['query'].peer_id) == false){
         check_incomp.push(get_request['query'].peer_id);
-        tracker_incomplete = check_incomp.length
+        tracker_incomplete = check_incomp.length;
         if(check_comp.includes(get_request['query'].peer_id)){
             if(check_comp.indexOf(get_request['query'].peer_id) != -1){
                 delete check_comp[check_comp.indexOf(get_request['query'].peer_id)];
@@ -124,31 +143,18 @@ app.get('/announce', (req, res) => {
     })
     pp.push("e");
     const processed_peers = pp.join("");
-    class encode_config{
-        constructor(interval="30", tracker_id="thatsitwhatyoulookinghere", complete=0, incomplete=0, peers="le"){
-            this.interval = interval;
-            this.tracker_id = tracker_id;
-            this.complete = complete;
-            this.incomplete = incomplete;
-            this.peers = peers;
-        };
-        encode(){
-            const obj_config = "d" +  "8" + ":" + "interval" + "i" + this.interval + "e" + "10" + ":" + "tracker id" + this.tracker_id.length + ":" + this.tracker_id + "8" + ":" + "complete" +  "i" + this.complete + "e" + "10" + ":" + "incomplete" + "i" + this.incomplete + "e" + "5" + ":" + "peers" + this.peers + "e";
-            return obj_config
-        }
-    }
     config = new encode_config(l_config.interval, l_config.tracker_id, tracker_complete, tracker_incomplete, processed_peers);
     enconded_response = config.encode()
-    console.log("[debug]".green,"Connection called by peer:", get_request['query'].peer_id, "|","complete:", tracker_complete, "|", "incomplete:", tracker_incomplete, "|", "peers:", peers.length, "|");
+    console.log("[connection]".yellow,"connection called by peer:", get_request['query'].peer_id, "|","complete:", tracker_complete, "|", "incomplete:", tracker_incomplete, "|", "peers:", peers.length, "|");
     loaded_torrent.loaded.push(get_request['query'].peer_id);
     torrents.forEach((torrent) => {if(torrent.info_hash === get_request['query'].info_hash){
         torrent.peers=peers;
     }});
-    console.log("[debug]".green,"response:", enconded_response);
-    console.log("torrent:".red, loaded_torrent.info_hash);
+    console.log("[connection]".yellow,"response:", enconded_response);
+    console.log("[torrent] info_hash:".red, loaded_torrent.info_hash);
     console.log("__________________");
     res.send(enconded_response);
     }
 });
 
-app.listen(9797);
+app.listen(l_config.port, (e) => {if(e){console.error("[error]".red,"tracker failed to start.", e);} console.log("[debug]".green,"tracker started successfully and is listening to requests...");});
