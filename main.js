@@ -93,7 +93,7 @@ setInterval(() => {
     torrents.forEach((torrent) => {
         torrent.peers = []
     });
-}, 200000);
+}, 900000);
 app.get('/announce', (req, res) => {
     const get_request = req;
     var loaded_torrent;
@@ -108,7 +108,15 @@ app.get('/announce', (req, res) => {
     if(loaded_torrent.loaded.includes(get_request['query'].peer_id)){}else{
     var ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
     const peers = loaded_torrent.peers;
-    peers.push(new peer(get_request['query'].peer_id, ip.split("::ffff:").pop(), get_request['query'].port).get());
+    var peer_create = true;
+    peers.forEach((peer) => {
+        if(peer.ip == ip.split("::ffff:").pop()){
+            peer_create = false;
+        };
+    });
+    if (peer_create) peers.push(new peer(get_request['query'].peer_id, ip.split("::ffff:").pop(), get_request['query'].port).get());
+    var peer_create = true;
+
     /* console.log(get_request['query']); */
 
     var pp = [];
@@ -157,4 +165,4 @@ app.get('/announce', (req, res) => {
     }
 });
 
-app.listen(l_config.port, (e) => {if(e){console.error("[error]".red,"tracker failed to start.", e);} console.log("[debug]".green,"tracker started successfully and is listening to requests...");});
+app.listen(l_config.port, (e) => {if(e){console.error("[error]".red,"tracker failed to start.", e);} console.log("[debug]".green,"tracker started successfully and it's listening to requests...");});
