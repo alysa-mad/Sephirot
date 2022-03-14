@@ -64,7 +64,7 @@ class torrent{
 };
 
 class encode_config{
-    constructor(interval="30", tracker_id="thatsitwhatyoulookinghere", complete=0, incomplete=0, peers="le"){
+    constructor(interval="300", tracker_id="thatsitwhatyoulookinghere", complete=0, incomplete=0, peers="le"){
         this.interval = interval;
         this.tracker_id = tracker_id;
         this.complete = complete;
@@ -145,6 +145,7 @@ app.get('/announce', (req, res) => {
     const processed_peers = pp.join("");
     config = new encode_config(l_config.interval, l_config.tracker_id, tracker_complete, tracker_incomplete, processed_peers);
     enconded_response = config.encode()
+    console.log("______________________________");
     console.log("[connection]".yellow,"connection called by peer:", get_request['query'].peer_id, "|","complete:", tracker_complete, "|", "incomplete:", tracker_incomplete, "|", "peers:", peers.length, "|");
     loaded_torrent.loaded.push(get_request['query'].peer_id);
     torrents.forEach((torrent) => {if(torrent.info_hash === get_request['query'].info_hash){
@@ -152,7 +153,7 @@ app.get('/announce', (req, res) => {
     }});
     console.log("[connection]".yellow,"response:", enconded_response);
     console.log("[torrent] info_hash:".red, loaded_torrent.info_hash);
-    console.log("__________________");
+    console.log("______________________________");
     res.send(enconded_response);
     }
 });
