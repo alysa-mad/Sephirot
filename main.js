@@ -144,6 +144,7 @@ app.get('/announce', (req, res) => {
     const config = new encode_config(l_config.interval, l_config.tracker_id, tracker_complete, tracker_incomplete, processed_peers);
     enconded_response = config.encode()
     console.log("______________________________");
+    const info_hash = loaded_torrent.info_hash.replace("~", "7e").split("%").join("");
     console.log("[torrent] info_hash:".red, info_hash);
     console.log("[connection]".yellow,"connection called by peer:", get_request['query'].peer_id, "|","complete:", tracker_complete, "|", "incomplete:", tracker_incomplete, "|", "peers:", peers.length, "|");
     loaded_torrent.loaded.push(get_request['query'].peer_id);
@@ -151,7 +152,6 @@ app.get('/announce', (req, res) => {
         torrent.peers=peers;
     }});
     console.log("[connection]".yellow,"response:", enconded_response);
-    const info_hash = loaded_torrent.info_hash.replace("~", "7e").split("%").join("");
     console.log("______________________________");
     res.send(enconded_response);
     }
