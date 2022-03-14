@@ -152,7 +152,8 @@ app.get('/announce', (req, res) => {
         torrent.peers=peers;
     }});
     console.log("[connection]".yellow,"response:", enconded_response);
-    console.log("[torrent] info_hash:".red, loaded_torrent.info_hash);
+    const info_hash = loaded_torrent.info_hash.replace("~", "7e").split("%").join("");
+    console.log("[torrent] info_hash:".red, info_hash);
     console.log("______________________________");
     res.send(enconded_response);
     }
