@@ -87,13 +87,13 @@ setInterval(() => {
     torrents.forEach((torrent) => {
         torrent.loaded = []
     });
-},15000);
+}, 15000);
 setInterval(() => {
     console.log("[debug]".green,"clearing peer list.")
     torrents.forEach((torrent) => {
         torrent.peers = []
     });
-},60000);
+}, 300000);
 app.get('/announce', (req, res) => {
     const get_request = req;
     var loaded_torrent;
@@ -143,7 +143,7 @@ app.get('/announce', (req, res) => {
     })
     pp.push("e");
     const processed_peers = pp.join("");
-    config = new encode_config(l_config.interval, l_config.tracker_id, tracker_complete, tracker_incomplete, processed_peers);
+    const config = new encode_config(l_config.interval, l_config.tracker_id, tracker_complete, tracker_incomplete, processed_peers);
     enconded_response = config.encode()
     console.log("______________________________");
     console.log("[connection]".yellow,"connection called by peer:", get_request['query'].peer_id, "|","complete:", tracker_complete, "|", "incomplete:", tracker_incomplete, "|", "peers:", peers.length, "|");
