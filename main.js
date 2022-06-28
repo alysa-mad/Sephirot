@@ -7,6 +7,7 @@ const colors = require('colors');
 // Local Imports
 const log = require('./local_modules/debug');
 const Peer = require('./local_modules/Peer');
+const User = require('./local_modules/User');
 const EncodeConfig = require('./local_modules/EncodeConfig');
 const Torrent = require('./local_modules/Torrent');
 const lFunc = require('./local_modules/local_functions');
