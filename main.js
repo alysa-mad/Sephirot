@@ -29,7 +29,7 @@ app.use(express.json());
 
 const users = [];
 const torrents = [];
-let peers;
+
 setInterval(() => {
   torrents.forEach((torrent) => {
     torrent.loaded = [];
@@ -63,7 +63,7 @@ app.get('/announce', (req, res) => {
   }
   if (loadedTorrent.loaded.includes(getRequest['query'].peer_id)) {} else {
     const ip = req.header('x-forwarded-for') || req.connection.remoteAddress;
-    peers = loadedTorrent.peers;
+    const peers = loadedTorrent.peers;
     let peerCreate = true;
     if (loadedUser === undefined) {
       loadedUser = new User(getRequest['query'].hash, ip.split('::ffff:').pop(), getRequest['query'].port, getRequest['query'].downloaded, getRequest['query'].uploaded)
@@ -111,7 +111,7 @@ app.get('/announce', (req, res) => {
     encodedResponse = config.encode();
     console.log('______________________________');
     const infoHash = loadedTorrent.infoHash.replace('~', '7e').replace('.', '2e').replace('-', '2d').replace('_', '5f').split('%').join('');
-    log.debug('torrent', `[torrent] infoHash: ${infoHash}`);
+    log.debug('torrent', `infoHash: ${infoHash}`);
     log.debug('conn', `connection called by peer: ${getRequest['query'].peer_id} | complete: ${trackerComplete} | incomplete: ${trackerIncomplete} | peers: ${peers.length} |`);
     loadedTorrent.loaded.push(getRequest['query'].peer_id);
     torrents.forEach((torrent) => {
