@@ -68,11 +68,11 @@ app.get('/announce', (req, res) => {
     if (loadedUser === undefined) {
       loadedUser = new User(getRequest['query'].hash, ip.split('::ffff:').pop(), getRequest['query'].port, getRequest['query'].downloaded, getRequest['query'].uploaded)
     }
-    peers.forEach((peer) => {
+    /*peers.forEach((peer) => {
       if (peer.ip == ip.split('::ffff:').pop()) {
         peerCreate = false;
       };
-    });
+    });*/
     if (peerCreate) peers.push(new Peer(getRequest['query'].peer_id, ip.split('::ffff:').pop(), getRequest['query'].port).get());
     peerCreate = true;
   /*console.log('______________________________');
